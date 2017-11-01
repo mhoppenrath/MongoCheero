@@ -1,134 +1,57 @@
-var express = require("express");
-var bodyParser = require("body-parser");
-var logger = require("morgan");
-var mongoose = require("mongoose");
+// Node Dependencies
+var express = require('express');
+var exphbs = require('express-handlebars');
+var bodyParser = require('body-parser');
+var mongoose = require('mongoose');
 
-// Our scraping tools
-// Axios is a promised-based http library, similar to jQuery's Ajax method
-// It works on the client and on the server
-var axios = require("axios");
-var cheerio = require("cheerio");
+var logger = require('morgan'); // for debugging
+var request = require('request'); // for web-scraping
+var cheerio = require('cheerio'); // for web-scraping
 
-// Require all models
-var db = require("./models");
-
-var PORT = 3000;
-
-// Initialize Express
+var PORT = process.env.PORT || 3000;
+// Initialize Express for debugging & body parsing
 var app = express();
+app.use(logger('dev'));
+app.use(bodyParser.urlencoded({extended: false}));
 
-// Configure middleware
-
-// Use morgan logger for logging requests
-app.use(logger("dev"));
-// Use body-parser for handling form submissions
-app.use(bodyParser.urlencoded({ extended: false }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
-// Set mongoose to leverage built in JavaScript ES6 Promises
-// Connect to the Mongo DB
-mongoose.Promise = Promise;
-mongoose.connect("mongodb://localhost/week18Populater", {
-  useMongoClient: true
+// Express-Handlebars
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
+
+
+// Connect to the Mongo DB and if it deployed to connect to the online verson
+if(process.env.NODE_ENV == 'production'){
+  mongoose.connect('');
+}
+else{
+  mongoose.connect('mongodb://localhost/news-scraper');
+}
+var db = mongoose.connection;
+
+// Show any Mongoose errors
+db.on('error', function(err) {
+  console.log('Mongoose Error: ', err);
 });
 
-// Routes
-
-// A GET route for scraping the echojs website
-app.get("/scrape", function(req, res) {
-  // First, we grab the body of the html with request
-  axios.get("http://www.echojs.com/").then(function(response) {
-    // Then, we load that into cheerio and save it to $ for a shorthand selector
-    var $ = cheerio.load(response.data);
-    // Now, we grab every h2 within an article tag, and do the following:
-    $("article h2").each(function(i, element) {
-      // Save an empty result object
-      var result = {};
-
-      // Add the text and href of every link, and save them as properties of the result object
-      result.title = $(this)
-        .children("a")
-        .text();
-      result.link = $(this)
-        .children("a")
-        .attr("href");
-
-      // Create a new Article using the `result` object built from scraping
-      db.Article
-        .create(result)
-        .then(function(dbArticle) {
-          // If we were able to successfully scrape and save an Article, send a message to the client
-          res.send("Scrape Complete");
-        })
-        .catch(function(err) {
-          // If an error occurred, send it to the client
-          res.json(err);
-        });
-    });
-  });
+// Once logged in to the db through mongoose, log a success message
+db.once('open', function() {
+  console.log('Mongoose connection successful.');
 });
 
-// Route for getting all Articles from the db
-app.get("/articles", function(req, res) {
-  db.Article
-    .find({})
-    .then(function(dbArticle) {
-      // If all Notes are successfully found, send them back to the client
-      res.json(dbArticle);
-    })
-    .catch(function(err) {
-      // If an error occurs, send the error back to the client
-      res.json(err);
-    });
-});
+// Import the Comment and Article models
+var Comment = require('./models/Comment.js');
+var Article = require('./models/Article.js');
 
-// Route for grabbing a specific Article by id, populate it with it's note
-app.get("/articles/:id", function(req, res) {
-  // TODO
-  // ====
-  // Finish the route so it finds one article using the req.params.id,
-  // and run the populate method with "note",
-  // then responds with the article with the note included
-  db.Article
-    .find({_id: req.params.id})
-    .populate("note")
-    .then(function(dbArticle) {
-      // If all Notes are successfully found, send them back to the client
-      res.json(dbArticle);
-    })
-    .catch(function(err) {
-      // If an error occurs, send the error back to the client
-      res.json(err);
-    });
-});
+// Import Routes/Controller
+var router = require('./controllers/controller.js');
+app.use('/', router);
 
-// Route for saving/updating an Article's associated Note
-app.post("/articles/:id", function(req, res) {
-  // TODO
-  // ====
-  // save the new note that gets posted to the Notes collection
-  // then find an article from the req.params.id
-  // and update it's "note" property with the _id of the new note
-  db.Note
-    .create(req.body)
-    .then(function(dbNote) {
-        return db.Note.findOneAndUpdate(
-          {_id: req.params.id},
-          {note: dbNote._id},
-          {new:true} //new true ensures the returned data is the updated version over the previous version
-    ) .then(function(dbArticle) {
-      // If all Notes are successfully found, send them back to the client
-      res.json(dbArticle)
-      })
-      .catch(function(err) {
-        // If an error occurs, send the error back to the client
-        res.json(err);
-      })
-    });
-});
 
 // Start the server
+
 app.listen(PORT, function() {
   console.log("App running on port " + PORT + "!");
 });
