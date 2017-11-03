@@ -24,7 +24,7 @@ app.set('view engine', 'handlebars');
 
 // Connect to the Mongo DB and if it deployed to connect to the online verson
 if(process.env.NODE_ENV == 'production'){
-  mongoose.connect('');
+  mongoose.connect('mongodb://demonstration:3216554>@ds033153.mlab.com:33153/heroku_hpx4xc8z');
 }
 else{
   mongoose.connect('mongodb://localhost/news-scraper');
