@@ -35,7 +35,7 @@ router.get('/scrape', function(req, res) {
     var $ = cheerio.load(html);
     //mongo is too slow to update to check as we pull with cerrio so we use titlesArray to makes sure we don't have duplicates
     var titlesArray = [];
-    $('article .inner').each(function(i, element) {
+    $('article.inner').each(function(i, element) {
         var result = {};
         result.title = $(this).children('header').children('h2').text().trim() + "";
         result.link = 'http://www.theonion.com' + $(this).children('header').children('h2').children('a').attr('href').trim();

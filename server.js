@@ -25,7 +25,7 @@ app.set('view engine', 'handlebars');
 
 // Connect to the Mongo DB and if it deployed to connect to the online verson
 if(process.env.NODE_ENV == 'production'){
-  mongoose.connect('mongodb://demonstration:321654Poi/.>@ds033153.mlab.com:33153/heroku_hpx4xc8z');
+  mongoose.connect('mongodb://heroku_hpx4xc8z:otdccmlvr9p9gcdm35itemhbmf@ds033153.mlab.com:33153/heroku_hpx4xc8z');
   console.log("Connected to env");
 }
 else{
