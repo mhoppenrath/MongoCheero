@@ -1,11 +1,9 @@
-// Node Dependencies
 var express = require('express');
 var router = express.Router();
 var path = require('path');
 var request = require('request');
 var cheerio = require('cheerio');
 
-// Import the Comment and Article models
 var Comment = require('../models/Comment.js');
 var Article = require('../models/Article.js');
 
@@ -39,9 +37,9 @@ router.get('/scrape', function(req, res) {
     var titlesArray = [];
     $('article .inner').each(function(i, element) {
         var result = {};
-        result.title = $(this).children('header').children('h2').text().trim() + ""; //convert to string for error handling later
+        result.title = $(this).children('header').children('h2').text().trim() + "";
         result.link = 'http://www.theonion.com' + $(this).children('header').children('h2').children('a').attr('href').trim();
-        result.summary = $(this).children('div').text().trim() + ""; //convert to string for error handling later
+        result.summary = $(this).children('div').text().trim() + "";
         if(result.title !== "" &&  result.summary !== ""){
 
           // BUT we must also check within each scrape since the Onion has duplicate articles...

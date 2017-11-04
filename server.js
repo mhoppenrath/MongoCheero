@@ -4,11 +4,12 @@ var exphbs = require('express-handlebars');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
-var logger = require('morgan'); // for debugging
-var request = require('request'); // for web-scraping
-var cheerio = require('cheerio'); // for web-scraping
+var logger = require('morgan');
+var request = require('request');
+var cheerio = require('cheerio');
 
 var PORT = process.env.PORT || 3000;
+
 // Initialize Express for debugging & body parsing
 var app = express();
 app.use(logger('dev'));
@@ -24,10 +25,12 @@ app.set('view engine', 'handlebars');
 
 // Connect to the Mongo DB and if it deployed to connect to the online verson
 if(process.env.NODE_ENV == 'production'){
-  mongoose.connect('mongodb://demonstration:3216554>@ds033153.mlab.com:33153/heroku_hpx4xc8z');
+  mongoose.connect('mongodb://demonstration:321654Poi/.>@ds033153.mlab.com:33153/heroku_hpx4xc8z');
+  console.log("Connected to env");
 }
 else{
   mongoose.connect('mongodb://localhost/news-scraper');
+  console.log("Wants to go to local");
 }
 var db = mongoose.connection;
 
