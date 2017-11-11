@@ -34,13 +34,17 @@ router.get('/scrape', function(req, res) {
   request('http://www.theonion.com/', function(error, response, html) {
     var $ = cheerio.load(html);
     //mongo is too slow to update to check as we pull with cerrio so we use titlesArray to makes sure we don't have duplicates
+
     var titlesArray = [];
-    $('article .inner').each(function(i, element) {
-  
+    $('.postlist__item').each(function(i, element) {
         var result = {};
-        result.title = $(this).children('header').children('h2').text().trim() + "";
-        result.link = 'http://www.theonion.com' + $(this).children('header').children('h2').children('a').attr('href').trim();
-        result.summary = $(this).children('div').text().trim() + "";
+
+        result.title = $(this).children('header').children('h1').text().trim() + "";
+        console.log(result.title);
+        result.link = $(this).children('header').children('h1').children('a').attr('href');
+        console.log(result.link)
+        result.summary = $(this).children('.item__content').text().trim() + "";
+        console.log(result.summary);
         if(result.title !== "" &&  result.summary !== ""){
 
           // BUT we must also check within each scrape since the Onion has duplicate articles...
@@ -52,7 +56,7 @@ router.get('/scrape', function(req, res) {
                 var entry = new Article (result);
                 entry.save(function(err, doc) {
                   if (err) {
-                    console.log(err);
+                   console.log(err);
                   }
                   else {
                     console.log(doc);
